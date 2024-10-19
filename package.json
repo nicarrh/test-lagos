@@ -1,0 +1,17 @@
+{
+  "name": "test-lagos",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "app:back": "cd backend && yarn dev",
+    "app:front": "cd front && yarn start",
+    "start": "concurrently \"yarn app:back\" \"yarn app:front\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
