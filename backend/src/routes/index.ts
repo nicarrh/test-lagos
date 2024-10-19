@@ -25,6 +25,7 @@ router.get("/search_tracks", async (req: Request, res: Response) => {
         throw error;
       });
     const { results } = json;
+    // get only artist tracks
     const data = results.filter(
       (item: any) => item?.artistName.toLowerCase() === name?.toLowerCase()
     );
@@ -32,12 +33,11 @@ router.get("/search_tracks", async (req: Request, res: Response) => {
     let albums: Object = {};
     // get albums grouped
     data.reduce((acc: any, item: any) => {
-      if (!acc[item.collectionId]) {
+      if (!acc[item.collectionId] && item.collectionName?.length) {
         acc[item.collectionId] = {
           collectionId: item.collectionId,
           collectionName: item.collectionName,
           artistName: item.artistName,
-          // songs: [],
         };
       }
 
@@ -73,25 +73,23 @@ router.get("/search_tracks", async (req: Request, res: Response) => {
       await memoryCache.set("userId", existingUserId);
     }
     const favorites = await FavoritesModel.find({ userId: existingUserId });
-    await memoryCache.set(
-      req.originalUrl,
-      JSON.stringify({
-        ok: true,
-        favorites,
-        total_albumes: Object.keys(albums).length,
-        total_canciones: tracks.length,
-        albumes: Object.values(albums).map((val) => val.collectionName),
-        canciones: tracks.slice(0, 24),
-      })
-    );
-
-    res.send({
+    const response = {
       ok: true,
       favorites,
       total_albumes: Object.keys(albums).length,
       total_canciones: tracks.length,
       albumes: Object.values(albums).map((val) => val.collectionName),
       canciones: tracks.slice(0, 24),
+    };
+    await memoryCache.set(
+      req.originalUrl,
+      JSON.stringify({
+        ...response,
+      })
+    );
+
+    res.send({
+      ...response,
     });
   } catch (err) {
     res.send({ ok: false, data: [], error: err });
